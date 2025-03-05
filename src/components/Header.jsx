@@ -1,11 +1,11 @@
-import logoImg from '../assets/logo.jpg'
+import logoImg from '../assets/logo1.webp'
 
 export default function Header(){
     return (
     <header id="main-header">
         <div id="title">
             <img src={logoImg} alt='A restaurant'/>
-            <h1>ReactFoodOrder</h1>
+            <h1>Food Order</h1>
         </div>
         <nav>
             <button>Cart (0)</button>
