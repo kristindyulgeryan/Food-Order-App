@@ -1,83 +1,86 @@
-import { createContext, useReducer} from "react";
+import { createContext, useReducer } from "react";
 
 const CartContext = createContext({
-    items: [],
-    addItem: (item)=>{},
-    removeItem: (id)=>{}
+  items: [],
+  addItem: (item) => {},
+  removeItem: (id) => {},
+  clearCart: () => {},
 });
 
+function cartReducer(state, action) {
+  if (action.type === "ADD_ITEM") {
+    const existingCartItemIndex = state.items.findIndex(
+      (item) => item.id === action.item.id
+    );
 
-function cartReducer(state, action){
-    if(action.type === 'ADD_ITEM'){
-       const existingCartItemIndex =state.items.findIndex(
-        (item)=> item.id === action.item.id);
-        
-        const updatedItems = [...state.items];
+    const updatedItems = [...state.items];
 
-        if(existingCartItemIndex > -1){
-            const existingItem = state.items[existingCartItemIndex]
-            const updatedItem = {
-                ...existingItem,
-                quantity: existingItem.quantity + 1,
-            };
+    if (existingCartItemIndex > -1) {
+      const existingItem = state.items[existingCartItemIndex];
+      const updatedItem = {
+        ...existingItem,
+        quantity: existingItem.quantity + 1,
+      };
 
-            updatedItems[existingCartItemIndex] = updatedItem
-        }else {
-            updatedItems.push({ ...action.item, quantity: 1 });
-        }
-
-        return {...state, items: updatedItems}
+      updatedItems[existingCartItemIndex] = updatedItem;
+    } else {
+      updatedItems.push({ ...action.item, quantity: 1 });
     }
 
-    if(action.type === 'REMOVE_ITEM'){
-        const existingCartItemIndex =state.items.findIndex(
-             (item)=> item.id === action.id );
-        
-        const existingCartItem = state.items[existingCartItemIndex];
+    return { ...state, items: updatedItems };
+  }
 
-        const updatedItems = [...state.items];
-        
-        if(existingCartItem.quantity === 1){
-           
-            updatedItems.splice(existingCartItemIndex, 1)
-        } else {
-            const updatedItem = {
-                ...existingCartItem,
-                quantity: existingCartItem.quantity - 1,
-            };
-            updatedItems[existingCartItemIndex] = updatedItem;
-        }
+  if (action.type === "REMOVE_ITEM") {
+    const existingCartItemIndex = state.items.findIndex(
+      (item) => item.id === action.id
+    );
 
-        return {...state, items: updatedItems}
+    const existingCartItem = state.items[existingCartItemIndex];
 
+    const updatedItems = [...state.items];
+
+    if (existingCartItem.quantity === 1) {
+      updatedItems.splice(existingCartItemIndex, 1);
+    } else {
+      const updatedItem = {
+        ...existingCartItem,
+        quantity: existingCartItem.quantity - 1,
+      };
+      updatedItems[existingCartItemIndex] = updatedItem;
     }
 
-    return state;
+    return { ...state, items: updatedItems };
+  }
+
+  if (action.type === "CLEAR_CART") {
+    return { ...state, items: [] };
+  }
+  return state;
 }
 
- export function CartContextProvider({children}){
+export function CartContextProvider({ children }) {
+  const [cart, dispatchCartAction] = useReducer(cartReducer, { items: [] });
 
-    const [ cart, dispatchCartAction ] = useReducer(cartReducer, { items:[] })
+  function addItem(item) {
+    dispatchCartAction({ type: "ADD_ITEM", item });
+  }
 
- 
-    function addItem(item){
-        dispatchCartAction({ type: 'ADD_ITEM', item})
-    }
+  function removeItem(id) {
+    dispatchCartAction({ type: "REMOVE_ITEM", id });
+  }
 
+  function clearCart() {
+    dispatchCartAction({ type: "CLEAR_CART" });
+  }
 
-    function removeItem(id){
-        dispatchCartAction({ type: 'REMOVE_ITEM', id});     
-}
-
-
-const cartContext = {
+  const cartContext = {
     items: cart.items,
     addItem,
     removeItem,
-}
-    console.log(cartContext);
-    
-    return (<CartContext value={cartContext}>{children}</CartContext>)
+    clearCart,
+  };
+  console.log(cartContext);
 
+  return <CartContext value={cartContext}>{children}</CartContext>;
 }
-export default CartContext
+export default CartContext;
